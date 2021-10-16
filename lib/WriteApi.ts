@@ -7,10 +7,6 @@ const auth_secret: string = process.env.TBA_WRITE_AUTH_SECRET || "";
 
 export const fetch = async (endpoint: string, data: any) => {
     const body = JSON.stringify(data);
-    console.log(
-        "Pre hash: ",
-        `${auth_secret}/api/trusted/v1${endpoint}${body}`
-    );
     const md5Hash = createHash("md5")
         .update(`${auth_secret}/api/trusted/v1${endpoint}${body}`)
         .digest("hex");

@@ -1,5 +1,6 @@
 import util from "util";
 import fetch from "node-fetch";
+import AbortController from "abort-controller";
 import { InfiniteRecharge, MatchListParser } from "./parsers";
 import Parser from "./parsers/Parser";
 
@@ -46,7 +47,12 @@ export const getMatch = async (matchCode: string) => {
 // Check if FMS is up and able to be pinged
 export const checkFMSConnection = async () => {
     try {
-        await fetch(URLS.ping);
+        const controller = new AbortController();
+        const signal = controller.signal;
+        setTimeout(() => {
+            controller.abort();
+        }, 5000);
+        await fetch(URLS.ping, { signal });
         return true;
     } catch (e) {
         return false;

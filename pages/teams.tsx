@@ -47,10 +47,15 @@ export default function Teams() {
                     placeholder="Team numbers"
                     value={teamInputData}
                     onChange={(event) => setTeamInputData(event.target.value)}
-                    rows={40}
+                    rows={24}
                 ></TextArea>
             </Form>
-            <Button onClick={handleChange}>Change Teams</Button>
+            <Button color="blue" onClick={handleChange}>
+                Change Teams
+            </Button>
+            <Button as="a" href="/" color="purple">
+                Back to home
+            </Button>
         </div>
     );
 }
