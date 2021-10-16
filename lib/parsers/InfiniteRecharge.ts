@@ -5,7 +5,6 @@ import {
 } from "tba-api-v3client-ts";
 import Parser from "./Parser";
 import type { Cheerio, Element, CheerioAPI } from "cheerio";
-import { first } from "cheerio/lib/api/traversing";
 
 type Alliance = {
     station1: number;
@@ -34,7 +33,7 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
         const compLevel = CompLevels[splitTitle[0]];
         const setNum = this.setNumber;
         const eventCode = process.env.CURRENT_EVENT as string;
-        return `${eventCode}_${compLevel}${setNum !== -1 ? setNum : ""}m${
+        return `${eventCode}_${compLevel}${setNum !== -1 ? setNum + "m" : ""}${
             this.matchNumber
         }`;
     }
@@ -362,7 +361,10 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
         );
     }
 
-    get breakdown(): Match_Score_Breakdown_2020 {
+    /**
+     * Return the score breakdown of the match.
+     */
+    get breakdown(): any | Match_Score_Breakdown_2020 {
         const redTeams = this.redTeams;
         const blueTeams = this.blueTeams;
         return {
@@ -403,6 +405,7 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
                 shieldEnergizedRankingPoint: this.blueShieldEnergized,
                 foulCount: this.blueFouls,
                 techFoulCount: this.blueTechFouls,
+                adjustPoints: 0,
                 rp:
                     this.blueRankingPoints +
                     (this.blueShieldOperational ? 1 : 0) +
@@ -445,6 +448,7 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
                 shieldEnergizedRankingPoint: this.redShieldEnergized,
                 foulCount: this.redFouls,
                 techFoulCount: this.redTechFouls,
+                adjustPoints: 0,
                 rp:
                     this.redRankingPoints +
                     (this.redShieldOperational ? 1 : 0) +
@@ -453,14 +457,36 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
         };
     }
 
-    get match(): Match {
+    get match(): any {
+        const redTeams = this.redTeams;
+        const blueTeams = this.blueTeams;
+        const set = this.setNumber;
+
         return {
             key: this.key,
             comp_level: this.compLevel,
-            set_number: this.setNumber,
+            set_number: set === -1 ? 1 : set,
             match_number: this.matchNumber,
             event_key: process.env.CURRENT_EVENT as string,
-            score_breakdown: this.breakdown,
+            score_breakdown: JSON.stringify(this.breakdown),
+            alliances: {
+                red: {
+                    teams: [
+                        "frc" + redTeams.station1,
+                        "frc" + redTeams.station2,
+                        "frc" + redTeams.station3,
+                    ],
+                    score: this.redFinalScore,
+                },
+                blue: {
+                    teams: [
+                        "frc" + blueTeams.station1,
+                        "frc" + blueTeams.station2,
+                        "frc" + blueTeams.station3,
+                    ],
+                    score: this.blueFinalScore,
+                },
+            },
         };
     }
 }

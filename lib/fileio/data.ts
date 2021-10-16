@@ -7,7 +7,7 @@ export type UploadedMatch = {
 };
 
 var db = new JsonDB(
-    new Config(`data/${process.env.CURRENT_EVENT}/uploads`, true, false, "/")
+    new Config(`data/${process.env.CURRENT_EVENT}/uploads`, true, true, "/")
 );
 
 export function writeUploadedMatch(fmsKey: string, tbaKey: string) {
@@ -15,8 +15,13 @@ export function writeUploadedMatch(fmsKey: string, tbaKey: string) {
 }
 
 export function isMatchUploaded(fmsKey: string) {
-    const match = db.getData(`/uploads/${fmsKey}`);
-    return match !== null && match.tbaMatchKey != "";
+    try {
+        const match = db.getData(`/uploads/${fmsKey}`);
+        // console.log(match);
+        return match !== null && match.tbaMatchKey != "";
+    } catch (err) {
+        return false;
+    }
 }
 
 export function deleteMatch(fmsKey: string) {

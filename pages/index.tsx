@@ -13,7 +13,7 @@ const Home: NextPage = () => {
         null
     );
 
-    const [uploadTimeout, setUplaodTimeout] = useState<NodeJS.Timeout | null>(
+    const [uploadTimeout, setUploadTimeout] = useState<NodeJS.Timeout | null>(
         null
     );
 
@@ -37,7 +37,7 @@ const Home: NextPage = () => {
         setCurrentlyUploading(true);
         try {
             const data = await fetch(
-                `/api/upload?levelParam=${currentEventLevel}`,
+                `/api/match/upload?levelParam=${currentEventLevel}`,
                 { method: "POST" }
             ).then((res) => res.json());
             setCurrentlyUploading(false);
@@ -45,9 +45,10 @@ const Home: NextPage = () => {
             setUploadedMatchCount(data.uploadCount);
             setUploadedMatchTime(new Date());
             // Wait 10 minutes, then call it again.
-            const t = setTimeout(checkForMatches, 60 * 10 * 1000);
-            setUplaodTimeout(t);
+            const t = setTimeout(checkForMatches, 60 * 5 * 1000);
+            setUploadTimeout(t);
         } catch (err) {
+            console.log(err);
             setCurrentlyUploading(false);
             toast("Error uploading to TOA. Checking FMS connection.");
             checkFMSConnection();

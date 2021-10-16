@@ -13,14 +13,18 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         // pull matches from FMS, figure out which ones have already been uploaded, then send those to the write API
         const allMatches = await getMatchList(levelParam);
         let uploadCount = 0;
+        console.log(`Loaded ${allMatches.length} matches`);
         for (const match of allMatches) {
             if (!isMatchUploaded(match.matchId)) {
                 const matchData = await getMatch(match.matchId);
-                const response = await postMatch(currentEvent, matchData);
-
-                if (response.status === 200) {
-                    writeUploadedMatch(match.matchId, matchData.key);
-                    uploadCount++;
+                if (matchData.score_breakdown?.blue?.totalPoints !== null) {
+                    // console.log(`Uploading match ${match.matchId}`);
+                    const response = await postMatch(currentEvent, matchData);
+                    console.log(response);
+                    if (response.status === 200) {
+                        writeUploadedMatch(match.matchId, matchData.key);
+                        uploadCount++;
+                    }
                 }
             }
         }

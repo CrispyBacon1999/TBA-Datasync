@@ -11,7 +11,8 @@ const FMS_URL = process.env.FMS_URL || "http://10.0.100.5";
 const URLS = {
     matches: `${FMS_URL}/FieldMonitor/MatchesPartialByLevel?levelParam=%d`,
     match: `${FMS_URL}/FieldMonitor/Matches/Score?matchId=%s`,
-    rankings: `${FMS_URL}/Put/GetData`,
+    rankings: `${FMS_URL}/Pit/GetData`,
+    pit: `${FMS_URL}/Pit/Qual`,
     ping: `${FMS_URL}`,
 };
 
@@ -57,4 +58,30 @@ export const checkFMSConnection = async () => {
     } catch (e) {
         return false;
     }
+};
+
+export const getRankingData = async () => {
+    const rankings = (await fetch(URLS.rankings, {
+        headers: {
+            Referer: URLS.pit,
+        },
+    }).then((res) => res.json())) as any;
+    console.log(rankings);
+
+    const tbaRanks = rankings.qualRanks.map((rank: any) => ({
+        team_key: "frc" + rank.team,
+        rank: rank.rank,
+        wins: rank.wins,
+        losses: rank.losses,
+        ties: rank.ties,
+        played: rank.played,
+        dqs: rank.dq,
+    }));
+
+    console.log(tbaRanks);
+
+    return {
+        breakdowns: tbaRanks.map(() => "Qual Score"),
+        rankings: tbaRanks,
+    };
 };
