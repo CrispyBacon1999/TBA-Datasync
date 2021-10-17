@@ -38,9 +38,9 @@ export const getMatchList = async (levelParam: number) => {
 export const getMatch = async (matchCode: string) => {
     const response = await fetch(util.format(URLS.match, matchCode));
     const data = await response.text();
-    console.log(current_year);
+    // console.log(`Current Year: ${current_year}`);
     const p = parsers[current_year];
-    console.log(p);
+    // console.log(p);
     const parser = new p(data);
     return parser.match;
 };
@@ -66,7 +66,8 @@ export const getRankingData = async () => {
             Referer: URLS.pit,
         },
     }).then((res) => res.json())) as any;
-    console.log(rankings);
+    // console.log("FMS Rankings:");
+    // console.log(rankings);
 
     const tbaRanks = rankings.qualRanks.map((rank: any) => ({
         team_key: "frc" + rank.team,
@@ -82,7 +83,8 @@ export const getRankingData = async () => {
         "Teleop Cell + CPanel": rank.sort4,
     }));
 
-    console.log(tbaRanks);
+    // console.log("TBA Rankings:");
+    // console.log(tbaRanks);
 
     return {
         breakdowns: [

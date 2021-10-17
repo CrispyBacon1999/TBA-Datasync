@@ -27,7 +27,7 @@ export default class MatchListParser {
                 .children("button")
                 .first()
                 .text();
-            console.log(matchPlay);
+            console.log(`Match/Play: ${matchPlay}`);
             const matchPlaySplit = matchPlay.split("/");
             const number = parseInt(matchPlaySplit[0]);
 

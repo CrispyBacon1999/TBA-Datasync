@@ -60,6 +60,7 @@ export const postTeams = async (eventKey: string, teamNumbers: number[]) => {
  * @returns The response from the server
  */
 export const postMatch = async (eventKey: string, match: Match) => {
+    console.log("Match:");
     console.log(match);
     const endpoint = `/event/${eventKey}/matches/update`;
     const response = await fetch(endpoint, [match]);

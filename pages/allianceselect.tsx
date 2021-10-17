@@ -11,6 +11,7 @@ export default function AllianceSelection() {
 
     const uploadAlliances = () => {
         const data = JSON.stringify(JSON.parse(allianceData));
+        console.log("Alliances:");
         console.log(data);
         fetch("/api/alliances", {
             method: "POST",
@@ -19,7 +20,7 @@ export default function AllianceSelection() {
             },
             body: data,
         }).then(() => {
-            console.log("Uploaded");
+            console.log("Uploaded Alliances");
         });
     };
 

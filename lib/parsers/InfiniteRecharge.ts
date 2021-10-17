@@ -12,10 +12,10 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
     private hasTargetColor(): boolean {
         const element = this.$("tr:nth-child(11) td:nth-child(2)");
         if (element.text().trim() === "Stage 3 Target") {
-            console.log("Has Target Color");
+            // console.log("Has Target Color");
             return true;
         } else {
-            console.log("No Target Color");
+            // console.log("No Target Color");
             return false;
         }
     }

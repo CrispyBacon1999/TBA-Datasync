@@ -66,7 +66,7 @@ export default abstract class Parser<T> {
 
         // Grab the match number
         let matchNum = parseInt(splitTitle[tiebreaker ? 2 : 1]);
-        console.log(`${compLevel} ${matchNum}`);
+        console.log(`Raw Match Number: ${compLevel}${matchNum}`);
 
         // For different competition levels, calculate out the match number, without the set number
         if (compLevel === Match.comp_level.EF) {
