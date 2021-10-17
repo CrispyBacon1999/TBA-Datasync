@@ -9,6 +9,17 @@ type GameStage = "Teleop" | "Auto";
 type PowerPortLocations = "Bottom" | "Outer" | "Inner";
 
 export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown_2020> {
+    private hasTargetColor(): boolean {
+        const element = this.$("tr:nth-child(11) td:nth-child(2)");
+        if (element.text().trim() === "Stage 3 Target") {
+            console.log("Has Target Color");
+            return true;
+        } else {
+            console.log("No Target Color");
+            return false;
+        }
+    }
+
     // Autonomous Points
     teamInitiationLine(team: number): boolean {
         return (
@@ -52,7 +63,9 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
         );
     }
     controlPanelPoints(side: AllianceSide): number {
-        return this.getNumberByRowNumber(11, side);
+        let rowNumber = 11;
+        if (this.hasTargetColor()) rowNumber++;
+        return this.getNumberByRowNumber(rowNumber, side);
     }
 
     // Endgame
@@ -66,12 +79,16 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
         );
     }
     endgamePoints(side: AllianceSide): number {
-        return this.getNumberByRowNumber(15, side);
+        let rowNumber = 15;
+        if (this.hasTargetColor()) rowNumber++;
+        return this.getNumberByRowNumber(rowNumber, side);
     }
 
     // Total
     teleopPoints(side: AllianceSide): number {
-        return this.getNumberByRowNumber(16, side);
+        let rowNumber = 16;
+        if (this.hasTargetColor()) rowNumber++;
+        return this.getNumberByRowNumber(rowNumber, side);
     }
 
     fouls(side: AllianceSide): number {
@@ -81,13 +98,19 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
         return this.getNumberByTitle("Tech Fouls", side);
     }
     foulPoints(side: AllianceSide): number {
-        return this.getNumberByRowNumber(19, side);
+        let rowNumber = 19;
+        if (this.hasTargetColor()) rowNumber++;
+        return this.getNumberByRowNumber(rowNumber, side);
     }
     finalScore(side: AllianceSide): number {
-        return this.getNumberByRowNumber(20, side);
+        let rowNumber = 20;
+        if (this.hasTargetColor()) rowNumber++;
+        return this.getNumberByRowNumber(rowNumber, side);
     }
     rankingPoints(side: AllianceSide): number {
-        return this.getNumberByRowNumber(22, side);
+        let rowNumber = 22;
+        if (this.hasTargetColor()) rowNumber++;
+        return this.getNumberByRowNumber(rowNumber, side);
     }
     shieldEnergized(side: AllianceSide): boolean {
         return this.existsByTitle(
@@ -146,7 +169,8 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
             foulCount: this.fouls(side),
             techFoulCount: this.techFouls(side),
             rp: this.shouldShowRankingPoints()
-                ? this.rankingPoints(side)
+                ? this.rankingPoints(side) +
+                  (this.shieldEnergized(side) ? 1 : 0)
                 : undefined,
         };
     }
