@@ -71,15 +71,15 @@ export default abstract class Parser<T> {
         // For different competition levels, calculate out the match number, without the set number
         if (compLevel === Match.comp_level.EF) {
             matchNum += tiebreaker ? 16 : 0;
-            return Math.floor(matchNum / 8) + 1;
+            return Math.floor((matchNum - 1) / 8) + 1;
         } else if (compLevel === Match.comp_level.QF) {
             // Add 8 to the match number if it's a tiebreaker match (qf1m3 => qf9)
             matchNum += tiebreaker ? 8 : 0;
             // Integer divide by 4 to get the set number
-            return Math.floor(matchNum / 4) + 1;
+            return Math.floor((matchNum - 1) / 4) + 1;
         } else if (compLevel === Match.comp_level.SF) {
             matchNum += tiebreaker ? 4 : 0;
-            return Math.floor(matchNum / 2) + 1;
+            return Math.floor((matchNum - 1) / 2) + 1;
         } else if (compLevel === Match.comp_level.F) {
             return matchNum;
         } else {
@@ -102,15 +102,15 @@ export default abstract class Parser<T> {
         // For different competition levels, calculate out the set/series number
         if (compLevel === Match.comp_level.EF) {
             matchNum += tiebreaker ? 16 : 0;
-            return matchNum % 8;
+            return ((matchNum - 1) % 8) + 1;
         } else if (compLevel === Match.comp_level.QF) {
             // Add 8 to the match number if it's a tiebreaker match (qf1m3 => m9)
             matchNum += tiebreaker ? 8 : 0;
             // Modulo by 4 to get the set number (m9 -> qf1, m10 -> qf2)
-            return matchNum % 4;
+            return ((matchNum - 1) % 4) + 1;
         } else if (compLevel === Match.comp_level.SF) {
             matchNum += tiebreaker ? 4 : 0;
-            return matchNum % 2;
+            return ((matchNum - 1) % 2) + 1;
         } else if (compLevel === Match.comp_level.F) {
             return 1;
         } else {
