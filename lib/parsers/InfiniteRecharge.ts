@@ -67,6 +67,19 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
         if (this.hasTargetColor()) rowNumber++;
         return this.getNumberByRowNumber(rowNumber, side);
     }
+    controlPanelTarget(side: AllianceSide): string {
+        if (this.existsByTitle("Target Color Blue", side)) {
+            return "Blue";
+        } else if (this.existsByTitle("Target Color Red", side)) {
+            return "Red";
+        } else if (this.existsByTitle("Target Color Green", side)) {
+            return "Green";
+        } else if (this.existsByTitle("Target Color Yellow", side)) {
+            return "Yellow";
+        } else {
+            return "Unknown";
+        }
+    }
 
     // Endgame
     teamEndgame(team: number): string {
@@ -153,7 +166,7 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
             stage1Activated: this.controlPanelStage(1, side),
             stage2Activated: this.controlPanelStage(2, side),
             stage3Activated: this.controlPanelStage(3, side),
-            stage3TargetColor: "Unknown",
+            stage3TargetColor: this.controlPanelTarget(side),
             endgameRungIsLevel: this.rungLevel(side) ? "IsLevel" : "NotLevel",
             autoInitLinePoints: this.initiationLinePoints(side),
             autoCellPoints: this.autoPowerCellPoints(side),
