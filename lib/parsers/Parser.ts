@@ -31,42 +31,55 @@ export default abstract class Parser<T> {
     abstract get breakdown(): T;
     abstract finalScore(side: AllianceSide): number;
 
+    /**
+     * @return {string} The TBA key for the match
+     */
     get key(): string {
-        const title = this.$("main .container-fluid .container h3")
-            .first()
-            .text()
-            .trim();
-        const splitTitle = title.split(" ");
-        const compLevel = CompLevels[splitTitle[0]];
-        const setNum = this.setNumber;
         const eventCode = process.env.CURRENT_EVENT as string;
-        return `${eventCode}_${compLevel}${setNum !== -1 ? setNum + "m" : ""}${
-            this.matchNumber
-        }`;
+        const matchCode = this.matchCode;
+        return `${eventCode}_${matchCode}`;
     }
 
-    get matchNumber(): number {
-        const title = this.$("main .container-fluid .container h3")
-            .first()
-            .text()
-            .trim();
-        const splitTitle = title.split(" ");
+    /**
+     * @return {string} the short code for the match (i.e. qm1, sf1m2, etc)
+     */
+    get matchCode(): string {
+        const compLevel = this.compLevel;
+        const setNum = this.setNumber;
+        const matchNum = this.matchNumber;
+        return `${compLevel}${setNum !== -1 ? setNum + "m" : ""}${matchNum}`;
+    }
 
-        const tiebreaker = splitTitle[1] === "Tiebreaker";
+    get compLevel(): Match.comp_level {
+        const splitTitle = this.splitTitle;
+        const compLevel = CompLevels[splitTitle[0]];
+        return compLevel;
+    }
+
+    /**
+     * @return {number} the match number within the current set/series of matches
+     */
+    get matchNumber(): number {
+        const splitTitle: string[] = this.splitTitle;
+        const compLevel = CompLevels[splitTitle[0]];
+        const tiebreaker: boolean = splitTitle[1] === "Tiebreaker";
+
         // Grab the match number
         let matchNum = parseInt(splitTitle[tiebreaker ? 2 : 1]);
-        console.log(matchNum);
-        const compLevel = CompLevels[splitTitle[0]];
-        console.log(compLevel);
+        console.log(`${compLevel} ${matchNum}`);
+
         // For different competition levels, calculate out the match number, without the set number
-        if (compLevel === Match.comp_level.QF) {
-            // Add 8 to the match number if it's a tiebreaker match
+        if (compLevel === Match.comp_level.EF) {
+            matchNum += tiebreaker ? 16 : 0;
+            return Math.floor(matchNum / 8) + 1;
+        } else if (compLevel === Match.comp_level.QF) {
+            // Add 8 to the match number if it's a tiebreaker match (qf1m3 => qf9)
             matchNum += tiebreaker ? 8 : 0;
-            // Do integer division to get the actual match number, along with the set number
-            return Math.floor((matchNum - 1) / 4) + 1;
+            // Integer divide by 4 to get the set number
+            return Math.floor(matchNum / 4) + 1;
         } else if (compLevel === Match.comp_level.SF) {
             matchNum += tiebreaker ? 4 : 0;
-            return Math.floor((matchNum - 1) / 2) + 1;
+            return Math.floor(matchNum / 2) + 1;
         } else if (compLevel === Match.comp_level.F) {
             return matchNum;
         } else {
@@ -74,33 +87,30 @@ export default abstract class Parser<T> {
         }
     }
 
-    get compLevel(): Match.comp_level {
-        const title = this.$("main .container-fluid .container h3")
-            .first()
-            .text()
-            .trim();
-        const splitTitle = title.split(" ");
-        const compLevel = CompLevels[splitTitle[0]];
-        return compLevel;
-    }
-
+    /**
+     * @return {number} the number of the current set/series of matches (i.e. qf1, qf2, qf3, etc). QM => -1
+     */
     get setNumber(): number {
-        const title = this.$("main .container-fluid .container h3")
-            .first()
-            .text()
-            .trim();
-        const splitTitle = title.split(" ");
+        const splitTitle = this.splitTitle;
+        const compLevel = CompLevels[splitTitle[0]];
         // Check if it's a tiebreaker match, super jank way of doing it
         const tiebreaker = splitTitle[1] === "Tiebreaker";
+
         // Grab the match number
         let matchNum = parseInt(splitTitle[tiebreaker ? 2 : 1]);
-        const compLevel = CompLevels[splitTitle[0]];
-        if (compLevel === Match.comp_level.QF) {
+
+        // For different competition levels, calculate out the set/series number
+        if (compLevel === Match.comp_level.EF) {
+            matchNum += tiebreaker ? 16 : 0;
+            return matchNum % 8;
+        } else if (compLevel === Match.comp_level.QF) {
+            // Add 8 to the match number if it's a tiebreaker match (qf1m3 => m9)
             matchNum += tiebreaker ? 8 : 0;
-            return ((matchNum - 1) % 4) + 1;
+            // Modulo by 4 to get the set number (m9 -> qf1, m10 -> qf2)
+            return matchNum % 4;
         } else if (compLevel === Match.comp_level.SF) {
             matchNum += tiebreaker ? 4 : 0;
-            return ((matchNum - 1) % 2) + 1;
+            return matchNum % 2;
         } else if (compLevel === Match.comp_level.F) {
             return 1;
         } else {
@@ -108,6 +118,10 @@ export default abstract class Parser<T> {
         }
     }
 
+    /**
+     * @param {AllianceSide} side The side of the alliance to get the teams for
+     * @return {Alliance} The alliance for the given side
+     */
     teams(side: AllianceSide): Alliance {
         const element = this.$("table thead tr th");
         let teamsBulletSeparated = "";
@@ -158,6 +172,14 @@ export default abstract class Parser<T> {
                 },
             },
         };
+    }
+
+    protected get splitTitle(): string[] {
+        const title = this.$("main .container-fluid .container h3")
+            .first()
+            .text()
+            .trim();
+        return title.split(" ");
     }
 
     protected getStringByRowNumber(

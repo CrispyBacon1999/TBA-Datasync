@@ -3,13 +3,13 @@ import {
     Match_Score_Breakdown_2020,
     Match_Score_Breakdown_2020_Alliance,
 } from "tba-api-v3client-ts";
-import Parser, { AllianceSide } from "./Parser";
-import type { Cheerio, Element, CheerioAPI } from "cheerio";
+import Parser, { Alliance, AllianceSide } from "./Parser";
 
 type GameStage = "Teleop" | "Auto";
 type PowerPortLocations = "Bottom" | "Outer" | "Inner";
 
 export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown_2020> {
+    // Autonomous Points
     teamInitiationLine(team: number): boolean {
         return (
             this.$(
@@ -17,7 +17,6 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
             ).text() === "Yes"
         );
     }
-
     initiationLinePoints(side: AllianceSide) {
         return this.getNumberByRowNumber(4, side);
     }
@@ -28,7 +27,7 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
         return this.getNumberByRowNumber(6, side);
     }
 
-    // Teleop cells
+    // Power cells
     private cellsByArea(
         stage: GameStage,
         location: PowerPortLocations,
@@ -60,7 +59,6 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
     teamEndgame(team: number): string {
         return this.$(`table tbody span[title="Team ${team} Endgame"]`).text();
     }
-
     rungLevel(side: AllianceSide): boolean {
         return (
             this.getStringByTitle("Shield Generator Bar Level", side) ===
@@ -109,7 +107,7 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
     }
 
     allianceBreakdown(side: AllianceSide): Match_Score_Breakdown_2020_Alliance {
-        const teams = this.teams(side);
+        const teams: Alliance = this.teams(side);
         return {
             initLineRobot1: this.teamInitiationLine(teams.station1)
                 ? "Exited"
@@ -156,7 +154,7 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
     /**
      * Return the score breakdown of the match.
      */
-    get breakdown(): any | Match_Score_Breakdown_2020 {
+    get breakdown(): Match_Score_Breakdown_2020 {
         return {
             blue: this.allianceBreakdown(AllianceSide.Blue),
             red: this.allianceBreakdown(AllianceSide.Red),
