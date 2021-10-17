@@ -76,12 +76,24 @@ export const getRankingData = async () => {
         ties: rank.ties,
         played: rank.played,
         dqs: rank.dq,
+        "Ranking Score": rank.sort1,
+        Auto: rank.sort2,
+        "End Game": rank.sort3,
+        "Teleop Cell + CPanel": rank.sort4,
     }));
 
     console.log(tbaRanks);
 
     return {
-        breakdowns: tbaRanks.map(() => "Qual Score"),
+        breakdowns: [
+            "wins",
+            "losses",
+            "ties",
+            "Ranking Score",
+            "Auto",
+            "End Game",
+            "Teleop Cell + CPanel",
+        ],
         rankings: tbaRanks,
     };
 };
