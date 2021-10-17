@@ -40,6 +40,9 @@ const Home: NextPage = () => {
                 `/api/match/upload?levelParam=${currentEventLevel}`,
                 { method: "POST" }
             ).then((res) => res.json());
+            if (currentEventLevel === 2) {
+                fetch("/api/event/rankings").then((res) => res.json());
+            }
             setCurrentlyUploading(false);
             console.log(data);
             setUploadedMatchCount(data.uploadCount);
@@ -129,7 +132,8 @@ const Home: NextPage = () => {
                     {uploadedMatchTime !== null ? (
                         <Card>
                             <Card.Content>
-                                Uploaded {uploadedMatchCount} matches at{" "}
+                                Uploaded {uploadedMatchCount} match
+                                {uploadedMatchCount === 1 ? "" : "es"} at{" "}
                                 {uploadedMatchTime.toLocaleTimeString()}
                             </Card.Content>
                         </Card>

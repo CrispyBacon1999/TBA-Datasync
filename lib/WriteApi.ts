@@ -73,7 +73,7 @@ export const postMatch = async (eventKey: string, match: Match) => {
  * @param matchNumber The match number to delete
  * @returns The response from the server
  */
-export const deleteMatch = async (eventKey: string, matchNumber: number) => {
+export const deleteMatch = async (eventKey: string, matchNumber: string) => {
     const endpoint = `/event/${eventKey}/matches/delete`;
     const response = await fetch(endpoint, [matchNumber]);
 
@@ -95,5 +95,14 @@ export const eventData = async (eventKey: string, bracketType: number) => {
 export const postRankings = async (eventKey: string, ranks: any) => {
     const endpoint = `/event/${eventKey}/rankings/update`;
     const response = await fetch(endpoint, ranks);
+    return response;
+};
+
+export const uploadAlliances = async (
+    eventKey: string,
+    alliances: string[][]
+) => {
+    const endpoint = `/event/${eventKey}/alliances/update`;
+    const response = await fetch(endpoint, alliances);
     return response;
 };

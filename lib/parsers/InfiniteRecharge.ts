@@ -16,7 +16,7 @@ const CompLevels: { [key: string]: Match.comp_level } = {
     Qualification: Match.comp_level.QM,
     Quarterfinal: Match.comp_level.QF,
     Semifinal: Match.comp_level.SF,
-    Finals: Match.comp_level.F,
+    Final: Match.comp_level.F,
 };
 
 export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown_2020> {
@@ -56,10 +56,10 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
             // Add 8 to the match number if it's a tiebreaker match
             matchNum += tiebreaker ? 8 : 0;
             // Do integer division to get the actual match number, along with the set number
-            return Math.floor(matchNum / 4) + 1;
+            return Math.floor((matchNum - 1) / 4) + 1;
         } else if (compLevel === Match.comp_level.SF) {
             matchNum += tiebreaker ? 4 : 0;
-            return Math.floor(matchNum / 2) + 1;
+            return Math.floor((matchNum - 1) / 2) + 1;
         } else if (compLevel === Match.comp_level.F) {
             return matchNum;
         } else {
@@ -90,12 +90,12 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
         const compLevel = CompLevels[splitTitle[0]];
         if (compLevel === Match.comp_level.QF) {
             matchNum += tiebreaker ? 8 : 0;
-            return matchNum % 4;
+            return ((matchNum - 1) % 4) + 1;
         } else if (compLevel === Match.comp_level.SF) {
             matchNum += tiebreaker ? 4 : 0;
-            return matchNum % 2;
+            return ((matchNum - 1) % 2) + 1;
         } else if (compLevel === Match.comp_level.F) {
-            return matchNum;
+            return 1;
         } else {
             return -1;
         }
@@ -367,6 +367,7 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
     get breakdown(): any | Match_Score_Breakdown_2020 {
         const redTeams = this.redTeams;
         const blueTeams = this.blueTeams;
+        const compLevel = this.compLevel;
         return {
             blue: {
                 initLineRobot1: this.teamInitiationLine(blueTeams.station1)
@@ -405,11 +406,11 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
                 shieldEnergizedRankingPoint: this.blueShieldEnergized,
                 foulCount: this.blueFouls,
                 techFoulCount: this.blueTechFouls,
-                adjustPoints: 0,
+                // adjustPoints: 0,
                 rp:
-                    this.blueRankingPoints +
-                    (this.blueShieldOperational ? 1 : 0) +
-                    (this.blueShieldEnergized ? 1 : 0),
+                    compLevel === Match.comp_level.QM
+                        ? this.blueRankingPoints
+                        : undefined,
             },
             red: {
                 initLineRobot1: this.teamInitiationLine(redTeams.station1)
@@ -448,11 +449,11 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
                 shieldEnergizedRankingPoint: this.redShieldEnergized,
                 foulCount: this.redFouls,
                 techFoulCount: this.redTechFouls,
-                adjustPoints: 0,
+                // adjustPoints: 0,
                 rp:
-                    this.redRankingPoints +
-                    (this.redShieldOperational ? 1 : 0) +
-                    (this.redShieldEnergized ? 1 : 0),
+                    compLevel === Match.comp_level.QM
+                        ? this.redRankingPoints
+                        : undefined,
             },
         };
     }
@@ -468,7 +469,8 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
             set_number: set === -1 ? 1 : set,
             match_number: this.matchNumber,
             event_key: process.env.CURRENT_EVENT as string,
-            score_breakdown: JSON.stringify(this.breakdown),
+            // score_breakdown: JSON.stringify(this.breakdown),
+            score_breakdown: this.breakdown,
             alliances: {
                 red: {
                     teams: [
