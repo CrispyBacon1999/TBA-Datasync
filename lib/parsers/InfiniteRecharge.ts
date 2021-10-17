@@ -3,7 +3,7 @@ import {
     Match_Score_Breakdown_2020,
     Match_Score_Breakdown_2020_Alliance,
 } from "tba-api-v3client-ts";
-import Parser from "./Parser";
+import Parser, { AllianceSide } from "./Parser";
 import type { Cheerio, Element, CheerioAPI } from "cheerio";
 
 type Alliance = {
@@ -11,6 +11,9 @@ type Alliance = {
     station2: number;
     station3: number;
 };
+
+type GameStage = "Teleop" | "Auto";
+type PowerPortLocations = "Bottom" | "Outer" | "Inner";
 
 const CompLevels: { [key: string]: Match.comp_level } = {
     Qualification: Match.comp_level.QM,
@@ -101,23 +104,14 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
         }
     }
 
-    // Pull blue teams
-    get blueTeams(): Alliance {
-        const teamsBulletSeparated = this.$("table thead tr th").first().text();
-        console.log(teamsBulletSeparated);
-        const teams = teamsBulletSeparated
-            .split("•")
-            .map((team) => parseInt(team.trim()));
-        return {
-            station1: teams[0],
-            station2: teams[1],
-            station3: teams[2],
-        };
-    }
-
-    // Pull red teams
-    get redTeams(): Alliance {
-        const teamsBulletSeparated = this.$("table thead tr th").last().text();
+    teams(side: AllianceSide): Alliance {
+        const element = this.$("table thead tr th");
+        let teamsBulletSeparated = "";
+        if (side === AllianceSide.Blue) {
+            teamsBulletSeparated = element.first().text();
+        } else {
+            teamsBulletSeparated = element.last().text();
+        }
         const teams = teamsBulletSeparated
             .split("•")
             .map((team) => parseInt(team.trim()));
@@ -136,331 +130,155 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
         );
     }
 
-    // Autonomous
-    get blueAutoCellsBottom(): number {
-        return parseInt(
-            this.$('span[title="Auto Cells, Bottom Port"]').first().text()
-        );
+    initiationLinePoints(side: AllianceSide) {
+        return this.getNumberByRowNumber(4, side);
     }
-    get blueAutoCellsOuter(): number {
-        return parseInt(
-            this.$('span[title="Auto Cells, Outer Port"]').first().text()
-        );
+    autoPowerCellPoints(side: AllianceSide) {
+        return this.getNumberByRowNumber(5, side);
     }
-    get blueAutoCellsInner(): number {
-        return parseInt(
-            this.$('span[title="Auto Cells, Inner Port"]').first().text()
-        );
-    }
-    get redAutoCellsBottom(): number {
-        return parseInt(
-            this.$('span[title="Auto Cells, Bottom Port"]').last().text()
-        );
-    }
-    get redAutoCellsOuter(): number {
-        return parseInt(
-            this.$('span[title="Auto Cells, Outer Port"]').last().text()
-        );
-    }
-    get redAutoCellsInner(): number {
-        return parseInt(
-            this.$('span[title="Auto Cells, Inner Port"]').last().text()
-        );
-    }
-    get blueInitiationLinePoints(): number {
-        return parseInt(this.$("tr:nth-child(4) td").first().text());
-    }
-    get redInitiationLinePoints(): number {
-        return parseInt(this.$("tr:nth-child(4) td").last().text());
-    }
-    get blueAutoPowerCellPoints(): number {
-        return parseInt(this.$("tr:nth-child(5) td").first().text());
-    }
-    get redAutoPowerCellPoints(): number {
-        return parseInt(this.$("tr:nth-child(5) td").last().text());
-    }
-    get blueAutoPoints(): number {
-        return parseInt(this.$("tr:nth-child(6) td").first().text());
-    }
-    get redAutoPoints(): number {
-        return parseInt(this.$("tr:nth-child(6) td").last().text());
+    autoPoints(side: AllianceSide): number {
+        return this.getNumberByRowNumber(6, side);
     }
 
     // Teleop cells
-    get blueTeleopCellsBottom(): number {
-        return parseInt(
-            this.$('span[title="Teleop Cells, Bottom Port"]').first().text()
-        );
+    private cellsByArea(
+        stage: GameStage,
+        location: PowerPortLocations,
+        side: AllianceSide
+    ) {
+        return this.getNumberByTitle(`${stage} Cells, ${location} Port`, side);
     }
-    get blueTeleopCellsOuter(): number {
-        return parseInt(
-            this.$('span[title="Teleop Cells, Outer Port"]').first().text()
-        );
+    autoCellsByArea(location: PowerPortLocations, side: AllianceSide) {
+        return this.cellsByArea("Auto", location, side);
     }
-    get blueTeleopCellsInner(): number {
-        return parseInt(
-            this.$('span[title="Teleop Cells, Inner Port"]').first().text()
-        );
+    teleopCellsByArea(location: PowerPortLocations, side: AllianceSide) {
+        return this.cellsByArea("Teleop", location, side);
     }
-    get redTeleopCellsBottom(): number {
-        return parseInt(
-            this.$('span[title="Teleop Cells, Bottom Port"]').last().text()
-        );
-    }
-    get redTeleopCellsOuter(): number {
-        return parseInt(
-            this.$('span[title="Teleop Cells, Outer Port"]').last().text()
-        );
-    }
-    get redTeleopCellsInner(): number {
-        return parseInt(
-            this.$('span[title="Teleop Cells, Inner Port"]').last().text()
-        );
-    }
-    get blueTeleopPowerCellPoints(): number {
-        return parseInt(this.$("tr:nth-child(9) td").first().text());
-    }
-    get redTeleopPowerCellPoints(): number {
-        return parseInt(this.$("tr:nth-child(9) td").last().text());
+    teleopPowerCellPoints(side: AllianceSide): number {
+        return this.getNumberByRowNumber(9, side);
     }
 
     // Control Panel
-    get blueControlPanelStage1(): boolean {
+    controlPanelStage(stage: number, side: AllianceSide): boolean {
         return (
-            this.$('span[title="Stage 1 Activated"]').first().text() === "Yes"
+            this.getStringByTitle(`Stage ${stage} Activated`, side) === "Yes"
         );
     }
-    get blueControlPanelStage2(): boolean {
-        return (
-            this.$('span[title="Stage 2 Activated"]').first().text() === "Yes"
-        );
-    }
-    get blueControlPanelStage3(): boolean {
-        return (
-            this.$('span[title="Stage 3 Activated"]').first().text() === "Yes"
-        );
-    }
-    get redControlPanelStage1(): boolean {
-        return (
-            this.$('span[title="Stage 1 Activated"]').last().text() === "Yes"
-        );
-    }
-    get redControlPanelStage2(): boolean {
-        return (
-            this.$('span[title="Stage 2 Activated"]').last().text() === "Yes"
-        );
-    }
-    get redControlPanelStage3(): boolean {
-        return (
-            this.$('span[title="Stage 3 Activated"]').last().text() === "Yes"
-        );
-    }
-    get blueControlPanelPoints(): number {
-        return parseInt(this.$("tr:nth-child(11) td").first().text());
-    }
-    get redControlPanelPoints(): number {
-        return parseInt(this.$("tr:nth-child(11) td").last().text());
+    controlPanelPoints(side: AllianceSide): number {
+        return this.getNumberByRowNumber(11, side);
     }
 
     // Endgame
     teamEndgame(team: number): string {
         return this.$(`table tbody span[title="Team ${team} Endgame"]`).text();
     }
-    get blueRungLevel(): boolean {
+
+    rungLevel(side: AllianceSide): boolean {
         return (
-            this.$(`table tbody span[title="Shield Generator Bar Level"]`)
-                .first()
-                .text() === "Rung was Level"
+            this.getStringByTitle("Shield Generator Bar Level", side) ===
+            "Rung was Level"
         );
     }
-    get redRungLevel(): boolean {
-        return (
-            this.$(`table tbody span[title="Shield Generator Bar Level"]`)
-                .last()
-                .text() === "Rung was Level"
-        );
-    }
-    get blueEndgamePoints(): number {
-        return parseInt(this.$("tr:nth-child(15) td").first().text());
-    }
-    get redEndgamePoints(): number {
-        return parseInt(this.$("tr:nth-child(15) td").last().text());
+    endgamePoints(side: AllianceSide): number {
+        return this.getNumberByRowNumber(15, side);
     }
 
     // Total
-    get blueTeleopPoints(): number {
-        return parseInt(this.$("tr:nth-child(16) td").first().text());
-    }
-    get redTeleopPoints(): number {
-        return parseInt(this.$("tr:nth-child(16) td").last().text());
+    teleopPoints(side: AllianceSide): number {
+        return this.getNumberByRowNumber(16, side);
     }
 
-    get blueFouls(): number {
-        return parseInt(
-            this.$(`table tbody span[title="Fouls"]`).first().text()
+    fouls(side: AllianceSide): number {
+        return this.getNumberByTitle("Fouls", side);
+    }
+    techFouls(side: AllianceSide): number {
+        return this.getNumberByTitle("Tech Fouls", side);
+    }
+    foulPoints(side: AllianceSide): number {
+        return this.getNumberByRowNumber(19, side);
+    }
+    finalScore(side: AllianceSide): number {
+        return this.getNumberByRowNumber(20, side);
+    }
+    rankingPoints(side: AllianceSide): number {
+        return this.getNumberByRowNumber(22, side);
+    }
+    shieldEnergized(side: AllianceSide): boolean {
+        return this.existsByTitle(
+            "Shield Energized Ranking Point Achieved",
+            side
         );
     }
-    get redFouls(): number {
-        return parseInt(
-            this.$(`table tbody span[title="Fouls"]`).last().text()
+    shieldOperational(side: AllianceSide): boolean {
+        return this.existsByTitle(
+            "Shield Operational Ranking Point Achieved",
+            side
         );
     }
-    get blueTechFouls(): number {
-        return parseInt(
-            this.$(`table tbody span[title="Tech Fouls"]`).first().text()
-        );
+
+    private shouldShowRankingPoints(): boolean {
+        return this.compLevel === Match.comp_level.QM;
     }
-    get redTechFouls(): number {
-        return parseInt(
-            this.$(`table tbody span[title="Tech Fouls"]`).last().text()
-        );
-    }
-    get blueFoulPoints(): number {
-        return parseInt(this.$("tr:nth-child(19) td").first().text());
-    }
-    get redFoulPoints(): number {
-        return parseInt(this.$("tr:nth-child(19) td").last().text());
-    }
-    get blueFinalScore(): number {
-        return parseInt(this.$("tr:nth-child(20) td").first().text());
-    }
-    get redFinalScore(): number {
-        return parseInt(this.$("tr:nth-child(20) td").last().text());
-    }
-    get blueRankingPoints(): number {
-        return parseInt(this.$("tr:nth-child(22) td").first().text());
-    }
-    get redRankingPoints(): number {
-        return parseInt(this.$("tr:nth-child(22) td").last().text());
-    }
-    get blueShieldEnergized(): boolean {
-        return (
-            this.$('.info img[title="Shield Energized Ranking Point Achieved"]')
-                .length > 0
-        );
-    }
-    get redShieldEnergized(): boolean {
-        return (
-            this.$(
-                '.danger img[title="Shield Energized Ranking Point Achieved"]'
-            ).length > 0
-        );
-    }
-    get blueShieldOperational(): boolean {
-        return (
-            this.$(
-                '.info img[title="Shield Operational Ranking Point Achieved"]'
-            ).length > 0
-        );
-    }
-    get redShieldOperational(): boolean {
-        return (
-            this.$(
-                '.danger img[title="Shield Operational Ranking Point Achieved"]'
-            ).length > 0
-        );
+
+    allianceBreakdown(side: AllianceSide): Match_Score_Breakdown_2020_Alliance {
+        const teams = this.teams(side);
+        const compLevel = this.compLevel;
+        return {
+            initLineRobot1: this.teamInitiationLine(teams.station1)
+                ? "Exited"
+                : "None",
+            initLineRobot2: this.teamInitiationLine(teams.station2)
+                ? "Exited"
+                : "None",
+            initLineRobot3: this.teamInitiationLine(teams.station3)
+                ? "Exited"
+                : "None",
+            endgameRobot1: this.teamEndgame(teams.station1),
+            endgameRobot2: this.teamEndgame(teams.station2),
+            endgameRobot3: this.teamEndgame(teams.station3),
+            autoCellsBottom: this.autoCellsByArea("Bottom", side),
+            autoCellsOuter: this.autoCellsByArea("Outer", side),
+            autoCellsInner: this.autoCellsByArea("Inner", side),
+            teleopCellsBottom: this.teleopCellsByArea("Bottom", side),
+            teleopCellsOuter: this.teleopCellsByArea("Outer", side),
+            teleopCellsInner: this.teleopCellsByArea("Inner", side),
+            stage1Activated: this.controlPanelStage(1, side),
+            stage2Activated: this.controlPanelStage(2, side),
+            stage3Activated: this.controlPanelStage(3, side),
+            stage3TargetColor: "Unknown",
+            endgameRungIsLevel: this.rungLevel(side) ? "IsLevel" : "NotLevel",
+            autoInitLinePoints: this.initiationLinePoints(side),
+            autoCellPoints: this.autoPowerCellPoints(side),
+            autoPoints: this.autoPoints(side),
+            controlPanelPoints: this.controlPanelPoints(side),
+            endgamePoints: this.endgamePoints(side),
+            teleopCellPoints: this.teleopPowerCellPoints(side),
+            teleopPoints: this.teleopPoints(side),
+            foulPoints: this.foulPoints(side),
+            totalPoints: this.finalScore(side),
+            shieldOperationalRankingPoint: this.shieldOperational(side),
+            shieldEnergizedRankingPoint: this.shieldEnergized(side),
+            foulCount: this.fouls(side),
+            techFoulCount: this.techFouls(side),
+            rp: this.shouldShowRankingPoints()
+                ? this.rankingPoints(side)
+                : undefined,
+        };
     }
 
     /**
      * Return the score breakdown of the match.
      */
     get breakdown(): any | Match_Score_Breakdown_2020 {
-        const redTeams = this.redTeams;
-        const blueTeams = this.blueTeams;
-        const compLevel = this.compLevel;
         return {
-            blue: {
-                initLineRobot1: this.teamInitiationLine(blueTeams.station1)
-                    ? "Exited"
-                    : "None",
-                initLineRobot2: this.teamInitiationLine(blueTeams.station2)
-                    ? "Exited"
-                    : "None",
-                initLineRobot3: this.teamInitiationLine(blueTeams.station3)
-                    ? "Exited"
-                    : "None",
-                endgameRobot1: this.teamEndgame(blueTeams.station1),
-                endgameRobot2: this.teamEndgame(blueTeams.station2),
-                endgameRobot3: this.teamEndgame(blueTeams.station3),
-                autoCellsBottom: this.blueAutoCellsBottom,
-                autoCellsOuter: this.blueAutoCellsOuter,
-                autoCellsInner: this.blueAutoCellsInner,
-                teleopCellsBottom: this.blueTeleopCellsBottom,
-                teleopCellsOuter: this.blueTeleopCellsOuter,
-                teleopCellsInner: this.blueTeleopCellsInner,
-                stage1Activated: this.blueControlPanelStage1,
-                stage2Activated: this.blueControlPanelStage2,
-                stage3Activated: this.blueControlPanelStage3,
-                stage3TargetColor: "Unknown",
-                endgameRungIsLevel: this.blueRungLevel ? "IsLevel" : "NotLevel",
-                autoInitLinePoints: this.blueInitiationLinePoints,
-                autoCellPoints: this.blueAutoPowerCellPoints,
-                autoPoints: this.blueAutoPoints,
-                controlPanelPoints: this.blueControlPanelPoints,
-                endgamePoints: this.blueEndgamePoints,
-                teleopCellPoints: this.blueTeleopPowerCellPoints,
-                teleopPoints: this.blueTeleopPoints,
-                foulPoints: this.blueFoulPoints,
-                totalPoints: this.blueFinalScore,
-                shieldOperationalRankingPoint: this.blueShieldOperational,
-                shieldEnergizedRankingPoint: this.blueShieldEnergized,
-                foulCount: this.blueFouls,
-                techFoulCount: this.blueTechFouls,
-                // adjustPoints: 0,
-                rp:
-                    compLevel === Match.comp_level.QM
-                        ? this.blueRankingPoints
-                        : undefined,
-            },
-            red: {
-                initLineRobot1: this.teamInitiationLine(redTeams.station1)
-                    ? "Exited"
-                    : "None",
-                initLineRobot2: this.teamInitiationLine(redTeams.station2)
-                    ? "Exited"
-                    : "None",
-                initLineRobot3: this.teamInitiationLine(redTeams.station3)
-                    ? "Exited"
-                    : "None",
-                endgameRobot1: this.teamEndgame(redTeams.station1),
-                endgameRobot2: this.teamEndgame(redTeams.station2),
-                endgameRobot3: this.teamEndgame(redTeams.station3),
-                autoCellsBottom: this.redAutoCellsBottom,
-                autoCellsOuter: this.redAutoCellsOuter,
-                autoCellsInner: this.redAutoCellsInner,
-                teleopCellsBottom: this.redTeleopCellsBottom,
-                teleopCellsOuter: this.redTeleopCellsOuter,
-                teleopCellsInner: this.redTeleopCellsInner,
-                stage1Activated: this.redControlPanelStage1,
-                stage2Activated: this.redControlPanelStage2,
-                stage3Activated: this.redControlPanelStage3,
-                stage3TargetColor: "Unknown",
-                endgameRungIsLevel: this.redRungLevel ? "IsLevel" : "NotLevel",
-                autoInitLinePoints: this.redInitiationLinePoints,
-                autoCellPoints: this.redAutoPowerCellPoints,
-                autoPoints: this.redAutoPoints,
-                controlPanelPoints: this.redControlPanelPoints,
-                endgamePoints: this.redEndgamePoints,
-                teleopCellPoints: this.redTeleopPowerCellPoints,
-                teleopPoints: this.redTeleopPoints,
-                foulPoints: this.redFoulPoints,
-                totalPoints: this.redFinalScore,
-                shieldOperationalRankingPoint: this.redShieldOperational,
-                shieldEnergizedRankingPoint: this.redShieldEnergized,
-                foulCount: this.redFouls,
-                techFoulCount: this.redTechFouls,
-                // adjustPoints: 0,
-                rp:
-                    compLevel === Match.comp_level.QM
-                        ? this.redRankingPoints
-                        : undefined,
-            },
+            blue: this.allianceBreakdown(AllianceSide.Blue),
+            red: this.allianceBreakdown(AllianceSide.Red),
         };
     }
 
     get match(): any {
-        const redTeams = this.redTeams;
-        const blueTeams = this.blueTeams;
+        const redTeams = this.teams(AllianceSide.Red);
+        const blueTeams = this.teams(AllianceSide.Blue);
         const set = this.setNumber;
 
         return {
@@ -478,7 +296,7 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
                         "frc" + redTeams.station2,
                         "frc" + redTeams.station3,
                     ],
-                    score: this.redFinalScore,
+                    score: this.finalScore(AllianceSide.Red),
                 },
                 blue: {
                     teams: [
@@ -486,7 +304,7 @@ export default class InfiniteRechargeParser extends Parser<Match_Score_Breakdown
                         "frc" + blueTeams.station2,
                         "frc" + blueTeams.station3,
                     ],
-                    score: this.blueFinalScore,
+                    score: this.finalScore(AllianceSide.Blue),
                 },
             },
         };
