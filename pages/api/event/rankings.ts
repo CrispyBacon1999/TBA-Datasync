@@ -9,7 +9,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
         process.env.CURRENT_EVENT as string,
         ranks
     );
-    // console.log(result);
+    console.log(result);
 
     res.status(200).json(result);
 }

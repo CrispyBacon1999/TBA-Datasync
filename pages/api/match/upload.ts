@@ -19,7 +19,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 const matchData = await getMatch(match.matchId);
                 if (matchData.score_breakdown?.blue?.totalPoints !== null) {
                     // console.log(`Uploading match ${match.matchId}`);
-                    const response = await postMatch(currentEvent, matchData);
+                    const response = await postMatch(matchData);
                     console.log(response);
                     if (response.status === 200) {
                         writeUploadedMatch(match.matchId, matchData.key);

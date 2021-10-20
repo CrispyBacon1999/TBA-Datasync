@@ -6,6 +6,8 @@ export type UploadedMatch = {
     tbaMatchKey: string;
 };
 
+var appDb = new JsonDB(new Config("data/app", true, true, "/"));
+
 var db = new JsonDB(
     new Config(`data/${process.env.CURRENT_EVENT}/uploads`, true, true, "/")
 );
@@ -26,4 +28,20 @@ export function isMatchUploaded(fmsKey: string) {
 
 export function deleteMatch(fmsKey: string) {
     db.delete(`/uploads/${fmsKey}`);
+}
+
+export function setTBAWriteKey(clientId: string, secret: string) {
+    appDb.push("/tbaWriteCredentials", { clientId, secret });
+}
+
+export function getTBAWriteCredentials(): { clientId: string; secret: string } {
+    return appDb.getData("/tbaWriteCredentials");
+}
+
+export function setCurrentEvent(eventKey: string) {
+    appDb.push("/currentEvent", eventKey);
+}
+
+export function getCurrentEvent(): string {
+    return appDb.getData("/currentEvent");
 }

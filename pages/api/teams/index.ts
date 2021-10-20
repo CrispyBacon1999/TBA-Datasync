@@ -1,26 +1,20 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { postTeams } from "../../../lib/WriteApi";
 import { OpenAPI, EventService } from "tba-api-v3client-ts";
+import { getCurrentEvent } from "../../../lib/fileio/data";
 
 OpenAPI.HEADERS = {
     "X-TBA-Auth-Key": process.env.TBA_KEY || "",
 };
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-    console.log(process.env.CURRENT_EVENT);
     if (req.method === "GET") {
-        const teams = await EventService.getEventTeamsKeys(
-            process.env.CURRENT_EVENT || ""
-        );
+        const teams = await EventService.getEventTeamsKeys(getCurrentEvent());
         res.status(200).json(teams);
     } else if (req.method === "POST") {
         const teams = JSON.parse(req.body);
-
         try {
-            const data = await postTeams(
-                process.env.CURRENT_EVENT || "",
-                teams
-            );
+            const data = await postTeams(teams);
             res.status(200).send("Success");
         } catch (err) {
             console.log(err);
