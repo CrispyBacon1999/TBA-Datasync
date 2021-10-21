@@ -44,13 +44,13 @@ export const fetch = async (endpoint: string, data: any) => {
  * @param teamNumbers The team numbers to post
  * @returns The response from the server
  */
-export const postTeams = async (teamNumbers: number[]) => {
+export const postTeams = async (teamKeys: string[]) => {
     const eventKey = getCurrentEvent();
     const endpoint = `/event/${eventKey}/team_list/update`;
 
-    const teamKeys = teamNumbers.map((team: number) => {
-        return "frc" + team;
-    });
+    // const teamKeys = teamNumbers.map((team: number) => {
+    //     return "frc" + team;
+    // });
 
     const response = await fetch(endpoint, teamKeys);
 

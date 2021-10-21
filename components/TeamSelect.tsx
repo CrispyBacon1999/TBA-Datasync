@@ -54,7 +54,9 @@ export default function TeamSelect() {
                     Add
                 </Button>
             </Form>
-            <Button color="blue">Save Teams</Button>
+            <Button color="blue" onClick={() => {}}>
+                Save Teams
+            </Button>
             <Segment>
                 <Table>
                     <Table.Header>
