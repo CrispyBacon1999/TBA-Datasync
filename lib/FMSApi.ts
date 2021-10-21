@@ -99,3 +99,24 @@ export const getRankingData = async () => {
         rankings: tbaRanks,
     };
 };
+
+export const generateElimScheduleOrder = (
+    allianceCount: number
+): number[][] => {
+    const matchList: number[][] = [];
+    for (let i = 0; i < allianceCount / 2; i++) {
+        matchList.push([i + 1, allianceCount - i]);
+    }
+
+    const matchOrder: number[][] = [];
+    const loopCount = matchList.length / 2;
+    for (let i = 0; i < loopCount; i++) {
+        const first = matchList.splice(0, 1)[0];
+        matchOrder.push(first);
+        const last = matchList.pop();
+        if (last !== undefined) {
+            matchOrder.push(last);
+        }
+    }
+    return matchList;
+};

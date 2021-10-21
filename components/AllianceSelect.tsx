@@ -10,25 +10,6 @@ import {
     Table,
 } from "semantic-ui-react";
 
-const tabOrder = [
-    [1, 2, 48, 49],
-    [3, 4, 47, 50],
-    [5, 6, 46, 51],
-    [7, 8, 45, 52],
-    [9, 10, 44, 53],
-    [11, 12, 43, 54],
-    [13, 14, 42, 55],
-    [15, 16, 41, 56],
-    [17, 18, 40, 57],
-    [19, 20, 39, 58],
-    [21, 22, 38, 59],
-    [23, 24, 37, 60],
-    [25, 26, 36, 61],
-    [27, 28, 35, 62],
-    [29, 30, 34, 63],
-    [31, 32, 33, 64],
-];
-
 export default function AllianceSelect() {
     const [allianceCount, setAllianceCount] = React.useState(8);
     const [alliances, setAlliances] = React.useState<(number | null)[][]>(
@@ -37,6 +18,16 @@ export default function AllianceSelect() {
         })
     );
     const [open, setOpen] = React.useState(false);
+
+    function calcTabOrder(i: number, j: number) {
+        if (j < 2) {
+            return Math.floor(i * 2 + 1 + i);
+        } else if (j === 2) {
+            return Math.floor(16 * 3 - i);
+        } else if (j === 3) {
+            return Math.floor(16 * 3 + i) + 1;
+        }
+    }
 
     return (
         <Container>
@@ -104,7 +95,7 @@ export default function AllianceSelect() {
                 </Modal.Actions>
             </Modal>
 
-            <Table>
+            <Table size="small">
                 <Table.Header>
                     <Table.HeaderCell>Alliance</Table.HeaderCell>
                     <Table.HeaderCell>Captain</Table.HeaderCell>
@@ -126,7 +117,8 @@ export default function AllianceSelect() {
                                                     j !== 0 &&
                                                     alliance[j - 1] === null
                                                 }
-                                                tabIndex={tabOrder[i][j]}
+                                                // tabIndex={tabOrder[i][j]}
+                                                tabIndex={calcTabOrder(i, j)}
                                                 onChange={(e) => {
                                                     console.log(i, j);
                                                     const newAlliances = [
