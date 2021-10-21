@@ -1,3 +1,4 @@
+import { InferGetServerSidePropsType } from "next";
 import React, { useEffect } from "react";
 import {
     Button,
@@ -11,8 +12,12 @@ import {
     Table,
 } from "semantic-ui-react";
 import { Team_Simple } from "tba-api-v3client-ts";
+import { EventService } from "../../lib/TBAApi";
+import { getCurrentEvent } from "../../lib/fileio/data";
 
-export default function AllianceSelect() {
+export default function AllianceSelect(
+    props: InferGetServerSidePropsType<typeof getServerSideProps>
+) {
     const [allianceCount, setAllianceCount] = React.useState(8);
     const [alliances, setAlliances] = React.useState<(number | null)[][]>(
         Array.from({ length: 16 }, () => {
@@ -20,7 +25,9 @@ export default function AllianceSelect() {
         })
     );
     const [open, setOpen] = React.useState(false);
-    const [teams, setTeams] = React.useState<Team_Simple[]>([]);
+    const [teams, setTeams] = React.useState<Team_Simple[]>(
+        props.teams ? props.teams : []
+    );
     const [teamSort, setTeamSort] = React.useState<{
         column: "name" | "number";
         direction: "ascending" | "descending";
@@ -35,14 +42,6 @@ export default function AllianceSelect() {
             return Math.floor(16 * 3 + i) + 1;
         }
     }
-
-    useEffect(() => {
-        fetch("/api/teams/simple")
-            .then((res) => res.json())
-            .then((data) => {
-                setTeams(data);
-            });
-    }, []);
 
     return (
         <Container>
@@ -226,11 +225,13 @@ export default function AllianceSelect() {
                                 {alliances
                                     .filter((_, i) => i < allianceCount)
                                     .map((alliance, i) => (
-                                        <Table.Row>
+                                        <Table.Row key={"alliance" + i}>
                                             <Table.Cell>{i + 1}</Table.Cell>
                                             {alliance.map((team, j) => {
                                                 return (
-                                                    <Table.Cell>
+                                                    <Table.Cell
+                                                        key={"team" + j}
+                                                    >
                                                         <Input
                                                             disabled={
                                                                 j !== 0 &&
@@ -288,4 +289,16 @@ export default function AllianceSelect() {
             </Grid>
         </Container>
     );
+}
+
+export async function getServerSideProps() {
+    const currentEvent = getCurrentEvent();
+    const teams = await EventService.getEventTeamsSimple(currentEvent);
+
+    return {
+        props: {
+            teams,
+            currentEvent,
+        },
+    };
 }

@@ -18,34 +18,20 @@ import {
 import type { Event_Simple } from "tba-api-v3client-ts";
 
 import Link from "next/link";
+import { getCurrentEvent, getTBAWriteCredentials } from "../../lib/fileio/data";
+import { InferGetServerSidePropsType } from "next";
 
 const eventRequestURL = "https://www.thebluealliance.com/request/apiwrite";
 const tbaAccountURL = "https://www.thebluealliance.com/account";
 
-export default function EventSelect() {
-    const [wizardStage, setWizardStage] = useState(0);
-    const [eventCode, setEventCode] = useState("");
-    const [clientId, setClientId] = useState("");
-    const [clientSecret, setClientSecret] = useState("");
+export default function EventSelect(
+    props: InferGetServerSidePropsType<typeof getServerSideProps>
+) {
+    const [wizardStage, setWizardStage] = useState(props.wizardState);
+    const [eventCode, setEventCode] = useState(props.eventCode);
+    const [clientId, setClientId] = useState(props.writeKeys.clientId);
+    const [clientSecret, setClientSecret] = useState(props.writeKeys.secret);
     const [popupOpen, setPopupOpen] = useState(false);
-
-    useEffect(() => {
-        fetch("/api/app/eventCode")
-            .then((res) => res.json())
-            .then((data) => {
-                setEventCode(data.code);
-            });
-        fetch("/api/app/writeKeys")
-            .then((res) => res.json())
-            .then((data) => {
-                console.log(data.code);
-                setClientId(data.code.clientId ?? "");
-                setClientSecret(data.code.secret ?? "");
-                if (data.code.clientId && data.code.secret) {
-                    setWizardStage(3);
-                }
-            });
-    });
 
     const router = useRouter();
 
@@ -163,4 +149,12 @@ export default function EventSelect() {
             </Segment>
         </Container>
     );
+}
+
+export async function getServerSideProps() {
+    const eventCode = getCurrentEvent();
+    const writeKeys = getTBAWriteCredentials();
+    const wizardState = writeKeys.clientId && writeKeys.secret ? 3 : 0;
+
+    return { props: { eventCode, writeKeys, wizardState } };
 }

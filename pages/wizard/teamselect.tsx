@@ -1,3 +1,4 @@
+import { InferGetServerSidePropsType } from "next";
 import React, { useEffect } from "react";
 import {
     Button,
@@ -8,18 +9,16 @@ import {
     Segment,
     Table,
 } from "semantic-ui-react";
+import { getCurrentEvent } from "../../lib/fileio/data";
+import { EventService } from "../../lib/TBAApi";
 
-export default function TeamSelect() {
-    const [teams, setTeams] = React.useState<string[]>([]);
+export default function TeamSelect(
+    props: InferGetServerSidePropsType<typeof getServerSideProps>
+) {
+    const [teams, setTeams] = React.useState<string[]>(
+        props.teams ? props.teams : []
+    );
     const [currentEditedTeam, setCurrentTeam] = React.useState("");
-
-    useEffect(() => {
-        fetch("/api/teams")
-            .then((res) => res.json())
-            .then((teams) => {
-                setTeams(teams);
-            });
-    }, []);
 
     return (
         <Container>
@@ -61,6 +60,7 @@ export default function TeamSelect() {
                 <Table>
                     <Table.Header>
                         <Table.Row>
+                            <Table.HeaderCell>Remove</Table.HeaderCell>
                             <Table.HeaderCell>Team</Table.HeaderCell>
                             {/* <Table.HeaderCell>Name</Table.HeaderCell> */}
                         </Table.Row>
@@ -69,6 +69,20 @@ export default function TeamSelect() {
                         {teams.map((teamKey) => {
                             return (
                                 <Table.Row>
+                                    <Table.Cell collapsing>
+                                        <Button
+                                            size="mini"
+                                            color="red"
+                                            icon="minus"
+                                            onClick={() => {
+                                                setTeams(
+                                                    teams.filter(
+                                                        (t) => t !== teamKey
+                                                    )
+                                                );
+                                            }}
+                                        ></Button>
+                                    </Table.Cell>
                                     <Table.Cell>
                                         {teamKey.replace("frc", "")}
                                     </Table.Cell>
@@ -80,4 +94,15 @@ export default function TeamSelect() {
             </Segment>
         </Container>
     );
+}
+
+export async function getServerSideProps() {
+    const currentEvent = getCurrentEvent();
+    const teams = (await EventService.getEventTeamsKeys(currentEvent)).sort(
+        (a, b) =>
+            parseInt(a.replace("frc", "")) - parseInt(b.replace("frc", ""))
+    );
+    return {
+        props: { teams, currentEvent },
+    };
 }
