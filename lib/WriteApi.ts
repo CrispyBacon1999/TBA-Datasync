@@ -63,7 +63,7 @@ export const postTeams = async (teamKeys: string[]) => {
  * @param match The match to post
  * @returns The response from the server
  */
-export const postMatch = async (match: Match) => {
+export const postMatch = async (match: WritableMatch<any>) => {
     console.log("Match:");
     console.log(match);
     const eventKey = getCurrentEvent();
@@ -113,3 +113,22 @@ export const uploadAlliances = async (alliances: string[][]) => {
     const response = await fetch(endpoint, alliances);
     return response;
 };
+
+export interface WritableMatch<T> {
+    key: string;
+    comp_level: Match.comp_level;
+    set_number: number;
+    match_number: number;
+    event_key: string;
+    score_breakdown?: T;
+    alliances: {
+        red: {
+            teams: string[];
+            score: number;
+        };
+        blue: {
+            teams: string[];
+            score: number;
+        };
+    };
+}

@@ -1,6 +1,8 @@
 import * as cheerio from "cheerio";
 import type { Cheerio, Element, CheerioAPI } from "cheerio";
 import { Match } from "tba-api-v3client-ts";
+import { getCurrentEvent } from "../fileio/data";
+import { WritableMatch } from "../WriteApi";
 
 export enum AllianceSide {
     Red,
@@ -140,7 +142,7 @@ export default abstract class Parser<T> {
         };
     }
 
-    get match(): any {
+    get match(): WritableMatch<T> {
         const redTeams = this.teams(AllianceSide.Red);
         const blueTeams = this.teams(AllianceSide.Blue);
         const set = this.setNumber;
@@ -150,7 +152,7 @@ export default abstract class Parser<T> {
             comp_level: this.compLevel,
             set_number: set === -1 ? 1 : set,
             match_number: this.matchNumber,
-            event_key: process.env.CURRENT_EVENT as string,
+            event_key: getCurrentEvent(),
             // score_breakdown: JSON.stringify(this.breakdown),
             score_breakdown: this.breakdown,
             alliances: {

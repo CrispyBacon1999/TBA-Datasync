@@ -5,6 +5,7 @@ import { InfiniteRecharge, MatchListParser } from "./parsers";
 import Parser from "./parsers/Parser";
 import { Match } from "tba-api-v3client-ts";
 import { getCurrentEvent } from "./fileio/data";
+import { WritableMatch } from "./WriteApi";
 
 console.log(process.env.CURRENT_EVENT?.substr(0, 4) || "");
 const current_year = parseInt(process.env.CURRENT_EVENT?.substr(0, 4) || "");
@@ -37,7 +38,9 @@ export const getMatchList = async (levelParam: number) => {
 };
 
 // Get match data from FMS, and return parsed data
-export const getMatch = async (matchCode: string) => {
+export const getMatch = async <T>(
+    matchCode: string
+): Promise<WritableMatch<T>> => {
     const response = await fetch(util.format(URLS.match, matchCode));
     const data = await response.text();
     // console.log(`Current Year: ${current_year}`);
