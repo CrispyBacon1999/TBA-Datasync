@@ -68,7 +68,7 @@ export default function TeamSelect(
                     <Table.Body>
                         {teams.map((teamKey) => {
                             return (
-                                <Table.Row>
+                                <Table.Row key={teamKey}>
                                     <Table.Cell collapsing>
                                         <Button
                                             size="mini"

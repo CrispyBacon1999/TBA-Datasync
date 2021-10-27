@@ -2,13 +2,13 @@
     "name": "tba-datasync",
     "version": "0.1.0",
     "private": true,
-    "main": "electron/build/electron-start.js",
+    "main": "build/electron/electron-start.js",
     "scripts": {
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "app": "npm run app:build && npm run app:run",
+        "app": "npm run build && npm run app:build && npm run app:run",
         "app:build": "tsc -p ./electron",
         "app:run": "electron ."
     },
@@ -23,7 +23,7 @@
         "react-toastify": "^8.0.3",
         "semantic-ui-css": "^2.4.1",
         "semantic-ui-react": "^2.0.4",
-        "tba-api-v3client-ts": "^3.8.2",
+        "tba-api-v3client-ts": "^3.8.3",
         "use-timer": "^2.0.1"
     },
     "devDependencies": {

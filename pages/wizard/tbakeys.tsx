@@ -109,7 +109,7 @@ export default function EventSelect(
                                 secret: clientSecret,
                             }),
                         }).then(() => {
-                            router.push("/wizard/teamSelect");
+                            router.push("/wizard/teamselect");
                         });
                     }}
                 >

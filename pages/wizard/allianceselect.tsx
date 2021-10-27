@@ -200,7 +200,7 @@ export default function AllianceSelect(
                                         return 0;
                                     })
                                     .map((team, i) => (
-                                        <Table.Row>
+                                        <Table.Row key={team.key}>
                                             <Table.Cell>
                                                 {team.team_number}
                                             </Table.Cell>
