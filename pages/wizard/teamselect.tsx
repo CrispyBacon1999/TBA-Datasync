@@ -48,12 +48,24 @@ export default function TeamSelect(
                                     parseInt(b.replace("frc", ""))
                             )
                         );
+                        setCurrentTeam("");
                     }}
                 >
                     Add
                 </Button>
             </Form>
-            <Button color="blue" onClick={() => {}}>
+            <Button
+                color="blue"
+                onClick={() => {
+                    fetch("/api/teams", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(teams),
+                    });
+                }}
+            >
                 Save Teams
             </Button>
             <Segment>

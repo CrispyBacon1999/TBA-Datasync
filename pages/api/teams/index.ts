@@ -12,7 +12,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         const teams = await EventService.getEventTeamsKeys(getCurrentEvent());
         res.status(200).json(teams);
     } else if (req.method === "POST") {
-        const teams = JSON.parse(req.body);
+        // const teams = JSON.parse(req.body);
+        const teams = req.body;
         try {
             const data = await postTeams(teams);
             res.status(200).send("Success");

@@ -64,7 +64,7 @@ export default function EventSelect() {
                             disabled={eventCode === ""}
                             color={eventCode !== "" ? "blue" : "grey"}
                             onClick={() => {
-                                router.push("/wizard/eventkeys");
+                                router.push("/wizard/tbakeys");
                             }}
                         >
                             Set TBA Upload Keys
