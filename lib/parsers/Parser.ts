@@ -37,7 +37,7 @@ export default abstract class Parser<T> {
      * @return {string} The TBA key for the match
      */
     get key(): string {
-        const eventCode = process.env.CURRENT_EVENT as string;
+        const eventCode = getCurrentEvent() as string;
         const matchCode = this.matchCode;
         return `${eventCode}_${matchCode}`;
     }
