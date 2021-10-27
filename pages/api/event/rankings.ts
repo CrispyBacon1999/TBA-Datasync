@@ -4,11 +4,7 @@ import { postRankings } from "../../../lib/WriteApi";
 
 export default async function (req: NextApiRequest, res: NextApiResponse) {
     const ranks = await getRankingData();
-    // console.log(ranks);
-    const result = await postRankings(
-        process.env.CURRENT_EVENT as string,
-        ranks
-    );
+    const result = await postRankings(ranks);
     console.log(result);
 
     res.status(200).json(result);

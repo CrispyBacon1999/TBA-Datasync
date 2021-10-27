@@ -5,7 +5,7 @@ const currentEvent = process.env.CURRENT_EVENT as string;
 
 export default async function (req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "GET") {
-        eventData(currentEvent, 2);
+        eventData(2);
         res.status(200).json({
             message: "OK",
         });
