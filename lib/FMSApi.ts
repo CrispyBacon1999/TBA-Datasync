@@ -74,35 +74,38 @@ export const getRankingData = async () => {
     // console.log("FMS Rankings:");
     // console.log(rankings);
 
-    const tbaRanks = rankings.qualRanks.map((rank: any) => ({
-        team_key: "frc" + rank.team,
-        rank: rank.rank,
-        wins: rank.wins,
-        losses: rank.losses,
-        ties: rank.ties,
-        played: rank.played,
-        dqs: rank.dq,
-        "Ranking Score": rank.sort1,
-        Auto: rank.sort2,
-        "End Game": rank.sort3,
-        "Teleop Cell + CPanel": rank.sort4,
-    }));
+    if (rankings.qualRanks) {
+        const tbaRanks = rankings.qualRanks.map((rank: any) => ({
+            team_key: "frc" + rank.team,
+            rank: rank.rank,
+            wins: rank.wins,
+            losses: rank.losses,
+            ties: rank.ties,
+            played: rank.played,
+            dqs: rank.dq,
+            "Ranking Score": rank.sort1,
+            Auto: rank.sort2,
+            "End Game": rank.sort3,
+            "Teleop Cell + CPanel": rank.sort4,
+        }));
 
-    // console.log("TBA Rankings:");
-    // console.log(tbaRanks);
+        // console.log("TBA Rankings:");
+        // console.log(tbaRanks);
 
-    return {
-        breakdowns: [
-            "wins",
-            "losses",
-            "ties",
-            "Ranking Score",
-            "Auto",
-            "End Game",
-            "Teleop Cell + CPanel",
-        ],
-        rankings: tbaRanks,
-    };
+        return {
+            breakdowns: [
+                "wins",
+                "losses",
+                "ties",
+                "Ranking Score",
+                "Auto",
+                "End Game",
+                "Teleop Cell + CPanel",
+            ],
+            rankings: tbaRanks,
+        };
+    }
+    return null;
 };
 
 export const generateElimScheduleOrder = (
@@ -129,13 +132,13 @@ export const generateElimScheduleOrder = (
 export const generateElimSchedule = (
     alliances: string[][],
     matchOrder: number[][]
-): Match[] => {
+): WritableMatch<any>[] => {
     let matchLevel = Match.comp_level.QF;
     if (matchOrder.length > 4) {
         matchLevel = Match.comp_level.EF;
     } else if (matchOrder.length > 2 && matchOrder.length < 4) {
         matchLevel = Match.comp_level.SF;
-    } else if (matchOrder.length) {
+    } else if (matchOrder.length === 1) {
         matchLevel = Match.comp_level.F;
     }
 
@@ -144,23 +147,24 @@ export const generateElimSchedule = (
     let i = 1;
     const matches = [];
     for (let matchAlliances of matchOrder) {
+        console.log(matchAlliances);
         for (let set = 1; set <= 3; set++) {
-            const match: Match = {
+            const match: WritableMatch<any> = {
                 event_key: event,
-                set_number: set,
-                match_number: i,
+                set_number: i,
+                match_number: set,
                 comp_level: matchLevel,
                 key: event + "_" + matchLevel + i + "m" + set,
                 alliances: {
                     blue: {
                         score: -1,
-                        team_keys: [
+                        teams: [
                             ...alliances[matchAlliances[1] - 1].slice(0, 3),
                         ],
                     },
                     red: {
                         score: -1,
-                        team_keys: [
+                        teams: [
                             ...alliances[matchAlliances[0] - 1].slice(0, 3),
                         ],
                     },

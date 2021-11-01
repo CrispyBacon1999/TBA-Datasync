@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { Button, Container, Header } from "semantic-ui-react";
-import { Match } from "tba-api-v3client-ts";
-import { useTimer } from "use-timer";
 
-export default function EliminationUploads() {
+import { useTimer } from "use-timer";
+import WritableMatchTable from "../../components/WritableMatchTable";
+import { WritableMatch } from "../../lib/WriteApi";
+
+export default function QualUploads() {
     const [fmsConnection, setFmsConnection] = useState<boolean | undefined>(
         undefined
     );
     const [currentlyUploading, setCurrentlyUploading] =
         useState<boolean>(false);
-    const [uploadedMatches, setUploadedMatches] = useState<Match[]>([]);
+    const [uploadedMatches, setUploadedMatches] = useState<
+        WritableMatch<any>[]
+    >([]);
     const { time, start, pause, reset, status } = useTimer({
-        initialTime: 30,
+        initialTime: 60,
         endTime: 0,
         timerType: "DECREMENTAL",
         onTimeOver: () => {
@@ -31,12 +35,11 @@ export default function EliminationUploads() {
 
     const checkForMatches = async () => {
         setCurrentlyUploading(true);
-        const uploadedMatches = await fetch(`/api/match/upload?levelParam=2`, {
+        const matches = await fetch(`/api/match/upload?levelParam=3`, {
             method: "POST",
         }).then((res) => res.json());
         setCurrentlyUploading(false);
-        setUploadedMatches(uploadedMatches);
-
+        setUploadedMatches(matches.uploads ?? []);
         // Restart timer
         reset();
         start();
@@ -72,6 +75,10 @@ export default function EliminationUploads() {
                     ? `Time until poll: ${time}`
                     : "Start Polling Matches"}
             </Button>
+
+            {uploadedMatches.map((match) => (
+                <WritableMatchTable match={match}></WritableMatchTable>
+            ))}
         </Container>
     );
 }

@@ -28,10 +28,24 @@ export default function AllianceSelect(
     const [teams, setTeams] = React.useState<Team_Simple[]>(
         props.teams ? props.teams : []
     );
+    const [pickedTeams, setPickedTeams] = React.useState<string[]>([]);
     const [teamSort, setTeamSort] = React.useState<{
         column: "name" | "number";
         direction: "ascending" | "descending";
-    }>({ column: "name", direction: "ascending" });
+    }>({ column: "number", direction: "ascending" });
+
+    let picked = [];
+
+    useEffect(() => {
+        picked = [];
+        for (let i = 0; i < alliances.length; i++) {
+            for (let j = 0; j < alliances[i].length; j++) {
+                if (alliances[i][j] !== null) {
+                    picked.push(alliances[i][j]);
+                }
+            }
+        }
+    }, [alliances]);
 
     function calcTabOrder(i: number, j: number) {
         if (j < 2) {
@@ -44,7 +58,7 @@ export default function AllianceSelect(
     }
 
     return (
-        <Container>
+        <>
             <Header>Alliance Selection</Header>
             <Dropdown
                 options={[
@@ -113,7 +127,7 @@ export default function AllianceSelect(
             <Grid>
                 <Grid.Row>
                     <Grid.Column width={6}>
-                        <Table size="small" sortable>
+                        <Table size="small" sortable collapsing>
                             <Table.Header>
                                 <Table.Row>
                                     <Table.HeaderCell
@@ -213,7 +227,7 @@ export default function AllianceSelect(
                         </Table>
                     </Grid.Column>
                     <Grid.Column width={10}>
-                        <Table size="small">
+                        <Table size="small" collapsing>
                             <Table.Header>
                                 <Table.HeaderCell>Alliance</Table.HeaderCell>
                                 <Table.HeaderCell>Captain</Table.HeaderCell>
@@ -287,7 +301,7 @@ export default function AllianceSelect(
                     </Grid.Column>
                 </Grid.Row>
             </Grid>
-        </Container>
+        </>
     );
 }
 

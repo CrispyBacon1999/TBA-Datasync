@@ -109,7 +109,7 @@ export const postRankings = async (ranks: any) => {
 
 export const uploadAlliances = async (alliances: string[][]) => {
     const eventKey = getCurrentEvent();
-    const endpoint = `/event/${eventKey}/alliances/update`;
+    const endpoint = `/event/${eventKey}/alliance_selections/update`;
     const response = await fetch(endpoint, alliances);
     return response;
 };

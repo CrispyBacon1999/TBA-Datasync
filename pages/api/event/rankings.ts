@@ -4,8 +4,12 @@ import { postRankings } from "../../../lib/WriteApi";
 
 export default async function (req: NextApiRequest, res: NextApiResponse) {
     const ranks = await getRankingData();
-    const result = await postRankings(ranks);
-    console.log(result);
+    if (ranks !== null) {
+        const result = await postRankings(ranks);
+        console.log(result);
 
-    res.status(200).json(result);
+        res.status(200).json(result);
+    } else {
+        res.status(200).json({ message: "No ranks found" });
+    }
 }

@@ -6,6 +6,7 @@ import {
     generateElimScheduleOrder,
 } from "../../../lib/FMSApi";
 import { EventService } from "../../../lib/TBAApi";
+import { postMatch, WritableMatch } from "../../../lib/WriteApi";
 
 export default async function (req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "POST") {
@@ -16,8 +17,14 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
 
         console.log(matchOrder);
 
-        const matches: Match[] = generateElimSchedule(alliances, matchOrder);
-
+        const matches: WritableMatch<any>[] = generateElimSchedule(
+            alliances,
+            matchOrder
+        );
+        for (const match of matches) {
+            await postMatch(match);
+            console.log(`Posted match: ${match.key}`);
+        }
         res.status(200).json(matches);
     }
 }
