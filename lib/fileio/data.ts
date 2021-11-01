@@ -9,7 +9,7 @@ export type UploadedMatch = {
 var appDb = new JsonDB(new Config("data/app", true, true, "/"));
 
 var db = new JsonDB(
-    new Config(`data/${process.env.CURRENT_EVENT}/uploads`, true, true, "/")
+    new Config(`data/${getCurrentEvent()}/uploads`, true, true, "/")
 );
 
 export function writeUploadedMatch(fmsKey: string, tbaKey: string) {

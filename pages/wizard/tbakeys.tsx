@@ -16,7 +16,6 @@ import {
     Step,
 } from "semantic-ui-react";
 import type { Event_Simple } from "tba-api-v3client-ts";
-import { useClippy } from "../../lib/clippy/clippy";
 
 import Link from "next/link";
 import { getCurrentEvent, getTBAWriteCredentials } from "../../lib/fileio/data";
@@ -35,21 +34,6 @@ export default function EventSelect(
     const [popupOpen, setPopupOpen] = useState(false);
 
     const router = useRouter();
-    // const { clippy } = useClippy("Bonzi");
-
-    // useEffect(() => {
-    //     clippy.then((clippy) => {
-    //         console.log("Clippy loaded");
-    //         clippy.show();
-    //         // if (!eventCode) {
-    //         clippy.moveTo(220, 0);
-    //         clippy.speak(
-    //             "Looks like you don't have an event selected. Pick one before you do anything else!"
-    //         );
-    //         clippy.play("GestureRight");
-    //         // }
-    //     });
-    // }, []);
 
     return (
         <Container>
