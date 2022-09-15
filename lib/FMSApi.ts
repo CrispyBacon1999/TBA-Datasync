@@ -1,7 +1,7 @@
 import util from "util";
 import fetch from "node-fetch";
 import AbortController from "abort-controller";
-import { InfiniteRecharge, MatchListParser } from "./parsers";
+import { InfiniteRecharge, MatchListParser, RapidReact } from "./parsers";
 import Parser from "./parsers/Parser";
 import { Match } from "tba-api-v3client-ts";
 import { getCurrentEvent } from "./fileio/data";
@@ -25,6 +25,7 @@ type Newable<T> = { new (...args: any[]): T };
 const parsers: { [key: number]: Newable<Parser<any>> } = {
     2020: InfiniteRecharge,
     2021: InfiniteRecharge,
+    2022: RapidReact,
 };
 
 // Pull match list, and return match codes, along with match numbers
@@ -42,6 +43,20 @@ export const getMatch = async <T>(
     matchCode: string
 ): Promise<WritableMatch<T>> => {
     const response = await fetch(util.format(URLS.match, matchCode));
+    const data = await response.text();
+    // console.log(`Current Year: ${current_year}`);
+    const p = parsers[current_year];
+    // console.log(p);
+    const parser = new p(data);
+    return parser.match;
+};
+
+export const getSampleMatch = async <T>(
+    sampleMatchName: string
+): Promise<WritableMatch<T>> => {
+    const response = await fetch(
+        `http://localhost:3000/sample/${sampleMatchName}`
+    );
     const data = await response.text();
     // console.log(`Current Year: ${current_year}`);
     const p = parsers[current_year];
@@ -71,8 +86,8 @@ export const getRankingData = async () => {
             Referer: URLS.pit,
         },
     }).then((res) => res.json())) as any;
-    // console.log("FMS Rankings:");
-    // console.log(rankings);
+    console.log("FMS Rankings:");
+    console.log(rankings);
 
     if (rankings.qualRanks) {
         const tbaRanks = rankings.qualRanks.map((rank: any) => ({
@@ -84,13 +99,13 @@ export const getRankingData = async () => {
             played: rank.played,
             dqs: rank.dq,
             "Ranking Score": rank.sort1,
-            Auto: rank.sort2,
-            "End Game": rank.sort3,
-            "Teleop Cell + CPanel": rank.sort4,
+            "Avg Match": rank.sort2,
+            "Avg Hangar": rank.sort3,
+            "Avg Taxi + Auto Cargo": rank.sort4,
         }));
 
-        // console.log("TBA Rankings:");
-        // console.log(tbaRanks);
+        console.log("TBA Rankings:");
+        console.log(tbaRanks);
 
         return {
             breakdowns: [
@@ -98,9 +113,9 @@ export const getRankingData = async () => {
                 "losses",
                 "ties",
                 "Ranking Score",
-                "Auto",
-                "End Game",
-                "Teleop Cell + CPanel",
+                "Avg Match",
+                "Avg Hangar",
+                "Avg Taxi + Auto Cargo",
             ],
             rankings: tbaRanks,
         };
@@ -111,6 +126,10 @@ export const getRankingData = async () => {
 export const generateElimScheduleOrder = (
     allianceCount: number
 ): number[][] => {
+    if (allianceCount === 5) {
+        console.log("Generating alliances");
+        return generateElimScheduleOrderRoundRobin(5);
+    }
     const matchList: number[][] = [];
     for (let i = 0; i < allianceCount / 2; i++) {
         matchList.push([i + 1, allianceCount - i]);
@@ -127,6 +146,33 @@ export const generateElimScheduleOrder = (
         }
     }
     return matchOrder;
+};
+
+export const generateElimScheduleOrderRoundRobin = (allianceCount: number) => {
+    // Todo: Actually do this automatically
+    const matchList: number[][] = [
+        [1, 4],
+        [2, 3],
+        [1, 4],
+        [2, 3],
+        [4, 5],
+        [1, 2],
+        [3, 5],
+        [1, 2],
+        [3, 5],
+        [4, 5],
+        [1, 3],
+        [2, 5],
+        [1, 3],
+        [2, 5],
+        [3, 4],
+        [1, 5],
+        [2, 4],
+        [1, 5],
+        [2, 4],
+        [3, 4],
+    ];
+    return matchList;
 };
 
 export const generateElimSchedule = (

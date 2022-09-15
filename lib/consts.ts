@@ -27,4 +27,5 @@ export const BracketName = {
     6: "Best of 5 Finals",
     7: "Best of 3 Finals",
     8: "Custom",
+    9: "Round Robin (5 Alliances)",
 };

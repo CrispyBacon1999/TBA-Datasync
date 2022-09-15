@@ -16,7 +16,7 @@ export function writeUploadedMatch(fmsKey: string, tbaKey: string) {
     db.push(`/uploads/${fmsKey}`, { fmsMatchKey: fmsKey, tbaMatchKey: tbaKey });
 }
 
-export function isMatchUploaded(fmsKey: string) {
+export function isMatchUploaded(fmsKey: string): boolean {
     try {
         const match = db.getData(`/uploads/${fmsKey}`);
         // console.log(match);
@@ -35,7 +35,14 @@ export function setTBAWriteKey(clientId: string, secret: string) {
 }
 
 export function getTBAWriteCredentials(): { clientId: string; secret: string } {
-    return appDb.getData("/tbaWriteCredentials");
+    try {
+        return appDb.getData("/tbaWriteCredentials");
+    } catch (err) {
+        return {
+            clientId: "",
+            secret: "",
+        };
+    }
 }
 
 export function setCurrentEvent(eventKey: string) {

@@ -68,7 +68,6 @@ export default abstract class Parser<T> {
 
         // Grab the match number
         let matchNum = parseInt(splitTitle[tiebreaker ? 2 : 1]);
-        console.log(`Raw Match Number: ${compLevel}${matchNum}`);
 
         // For different competition levels, calculate out the match number, without the set number
         if (compLevel === Match.comp_level.EF) {
@@ -140,6 +139,13 @@ export default abstract class Parser<T> {
             station2: teams[1],
             station3: teams[2],
         };
+    }
+
+    teamIndex(spot: number, side: AllianceSide) {
+        if (side === AllianceSide.Red) {
+            return spot + 3;
+        }
+        return spot;
     }
 
     get match(): WritableMatch<T> {
@@ -224,6 +230,63 @@ export default abstract class Parser<T> {
         } else {
             return element.last().text();
         }
+    }
+
+    protected getNumberBySelector(
+        selector: cheerio.BasicAcceptedElems<cheerio.Node>,
+        side: AllianceSide
+    ) {
+        const element = this.$(selector);
+        if (side === AllianceSide.Blue) {
+            return parseInt(element.first().text());
+        } else {
+            return parseInt(element.last().text());
+        }
+    }
+
+    protected getStringBySelector(
+        selector: cheerio.BasicAcceptedElems<cheerio.Node>,
+        side: AllianceSide
+    ) {
+        const element = this.$(selector);
+        if (side === AllianceSide.Blue) {
+            return element.first().text();
+        } else {
+            return element.last().text();
+        }
+    }
+
+    protected getElementBySelector(
+        selector: cheerio.BasicAcceptedElems<cheerio.Node>,
+        side: AllianceSide
+    ) {
+        const element = this.$(selector);
+        if (side === AllianceSide.Blue) {
+            return element.first();
+        } else {
+            return element.last();
+        }
+    }
+
+    protected getIconByTitle(titleAttr: string): string {
+        const element = this.$(`*[title="${titleAttr}"] i`);
+        const classList = element.attr("class") || "";
+        return classList.replace(/fas\s*/, "");
+    }
+
+    protected getIconByRowNumber(
+        rowNumber: number,
+        side: AllianceSide
+    ): string {
+        const element = this.$(`tr:nth-child(${rowNumber}) i`);
+        let icon: cheerio.Cheerio<cheerio.Element>;
+        if (side === AllianceSide.Blue) {
+            icon = element.first();
+        } else {
+            icon = element.last();
+        }
+        const classList = icon.attr("class") || "";
+        return classList.replace(/fas\s*/, "");
     }
 
     protected existsByTitle(titleAttr: string, side: AllianceSide): boolean {
